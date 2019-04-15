@@ -228,3 +228,13 @@ products_dimension <- products_dimension[order(products_dimension$ProductName),]
 products_dimension$product_key<-1:nrow(products_dimension)
 products_dimension <- select(products_dimension, product_key, Id, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued)
 
+#Product_Dimension
+products_dimension <- merge(products_dimension, suppliers_dimension, by = "Id", all.x = TRUE)
+View(products_dimension)
+products_dimension[is.na(products_dimension)] <- "missing"
+products_dimension <- select(products_dimension, product_key, Id, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued, supplier_key, CompanyName, ContactName, ContactTitle,
+                             Address, City, Region, PostalCode, Country, Phone, Fax, HomePage)
+
+#Sort by ProductName
+products_dimension <- products_dimension[order(products_dimension$ProductName),]
+View(products_dimension)
