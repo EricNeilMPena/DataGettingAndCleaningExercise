@@ -237,4 +237,4 @@ products_dimension <- select(products_dimension, product_key, Id, ProductName, Q
 
 #Sort by ProductName
 products_dimension <- products_dimension[order(products_dimension$ProductName),]
-View(products_dimension)
+
