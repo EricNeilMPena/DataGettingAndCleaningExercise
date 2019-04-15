@@ -41,10 +41,11 @@ customers_dimension$customer_key<-1:nrow(customers_dimension)
 #4.3
 #copy employees into employees_dimension and remove missing values
 employees_dimension<-Employees
+employees_dimension$Photo<-0
 for(i in 1:nrow(employees_dimension)){
       for(j in 3:ncol(employees_dimension)){
             if(is.na(employees_dimension[i,j])){
-                  employees_dimension[i,j]<-"Missing"
+                  employees_dimension[i,j]<- c("Missing")
             }
       }
 }
@@ -77,7 +78,7 @@ order_date_dimension<-rbind(order_date_dimension,temp)
 colnames(order_date_dimension)<-"order_date_key"
 order_date_dimension$order_date<-seq(ymd("2010-01-01"),ymd("2019-12-31"),by= "1 day")
 order_date_dimension$order_day_of_week<-weekdays(order_date_dimension$order_date)
-
+#check type of day
 for (i in 1:nrow(order_date_dimension)){
       ifelse(order_date_dimension[i,3]=="Sunday",order_date_dimension$type_of_day[i]<-"Weekend",
              ifelse(order_date_dimension[i,3]=="Saturday",order_date_dimension$type_of_day[i]<-"Weekend",
@@ -118,6 +119,52 @@ for(i in 1:nrow(order_date_dimension)){
 }
 
 
+#required date dimension
+required_date_dimension<-rbind(required_date_dimension,temp)
+colnames(required_date_dimension)<-"required_date_key"
+required_date_dimension$required_date<-seq(ymd("2010-01-01"),ymd("2019-12-31"),by= "1 day")
+required_date_dimension$required_day_of_week<-weekdays(required_date_dimension$required_date)
+#check type of day
+for (i in 1:nrow(required_date_dimension)){
+      ifelse(required_date_dimension[i,3]=="Sunday",required_date_dimension$type_of_day[i]<-"Weekend",
+             ifelse(required_date_dimension[i,3]=="Saturday",required_date_dimension$type_of_day[i]<-"Weekend",
+                    required_date_dimension$type_of_day[i]<-"Weekday"))
+}
+required_date_dimension$day<-day(required_date_dimension$required_date)
+required_date_dimension$month<-month(required_date_dimension$required_date,label=TRUE,abbr=FALSE)
+required_date_dimension$year<-year(required_date_dimension$required_date)
+
+for(i in 1:nrow(required_date_dimension)){
+      if(required_date_dimension$month[i]=="February" & leap_year(required_date_dimension$year[i])==TRUE){
+            end<-29
+      }
+      else if (required_date_dimension$month[i]=="February" & leap_year(required_date_dimension$year[i])==FALSE){
+            end<-28
+      }
+      else {
+            end<-30
+      }
+      if(required_date_dimension$day[i]==15|required_date_dimension$day[i]==end){
+            if(required_date_dimension$type_of_day[i]=="Weekday"){
+                  required_date_dimension$payday[i]<-"Yes"
+            }
+            else if(required_date_dimension$type_of_day[i]=="Weekend"){
+                  if (required_date_dimension$type_of_day[i-1]=="Weekday"){
+                        required_date_dimension$payday[i-1]<-"Yes"
+                        required_date_dimension$payday[i]<-"No"
+                  }
+                  else {
+                        required_date_dimension$payday[i-2]<-"Yes"
+                        required_date_dimension$payday[i]<-"No"
+                  }
+            }
+      }
+      else{
+            required_date_dimension$payday[i]<-"No"
+      }
+}
+
+
 ## shipped_date_dimension
 temp<-as.data.frame(1:3652)
 shipped_date_dimension<-rbind(shipped_date_dimension,temp)
@@ -126,42 +173,42 @@ shipped_date_dimension$shipped_date<-seq(ymd("2010-01-01"),ymd("2019-12-31"),by=
 shipped_date_dimension$shipped_day_of_week<-weekdays(shipped_date_dimension$shipped_date)
 
 for (i in 1:nrow(shipped_date_dimension)){
-    ifelse(shipped_date_dimension[i,3]=="Sunday",shipped_date_dimension$type_of_day[i]<-"Weekend",
-           ifelse(shipped_date_dimension[i,3]=="Saturday",shipped_date_dimension$type_of_day[i]<-"Weekend",
-                  shipped_date_dimension$type_of_day[i]<-"Weekday"))
+      ifelse(shipped_date_dimension[i,3]=="Sunday",shipped_date_dimension$type_of_day[i]<-"Weekend",
+             ifelse(shipped_date_dimension[i,3]=="Saturday",shipped_date_dimension$type_of_day[i]<-"Weekend",
+                    shipped_date_dimension$type_of_day[i]<-"Weekday"))
 }
 shipped_date_dimension$day<-day(shipped_date_dimension$shipped_date)
 shipped_date_dimension$month<-month(shipped_date_dimension$shipped_date,label=TRUE,abbr=FALSE)
 shipped_date_dimension$year<-year(shipped_date_dimension$shipped_date)
 
 for(i in 1:nrow(shipped_date_dimension)){
-    if(shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==TRUE){
-        end<-29
-    }
-    else if (shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==FALSE){
-        end<-28
-    }
-    else {
-        end<-30
-    }
-    if(shipped_date_dimension$day[i]==15|shipped_date_dimension$day[i]==end){
-        if(shipped_date_dimension$type_of_day[i]=="Weekday"){
-            shipped_date_dimension$payday[i]<-"Yes"
-        }
-        else if(shipped_date_dimension$type_of_day[i]=="Weekend"){
-            if (shipped_date_dimension$type_of_day[i-1]=="Weekday"){
-                shipped_date_dimension$payday[i-1]<-"Yes"
-                shipped_date_dimension$payday[i]<-"No"
+      if(shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==TRUE){
+            end<-29
+      }
+      else if (shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==FALSE){
+            end<-28
+      }
+      else {
+            end<-30
+      }
+      if(shipped_date_dimension$day[i]==15|shipped_date_dimension$day[i]==end){
+            if(shipped_date_dimension$type_of_day[i]=="Weekday"){
+                  shipped_date_dimension$payday[i]<-"Yes"
             }
-            else {
-                shipped_date_dimension$payday[i-2]<-"Yes"
-                shipped_date_dimension$payday[i]<-"No"
+            else if(shipped_date_dimension$type_of_day[i]=="Weekend"){
+                  if (shipped_date_dimension$type_of_day[i-1]=="Weekday"){
+                        shipped_date_dimension$payday[i-1]<-"Yes"
+                        shipped_date_dimension$payday[i]<-"No"
+                  }
+                  else {
+                        shipped_date_dimension$payday[i-2]<-"Yes"
+                        shipped_date_dimension$payday[i]<-"No"
+                  }
             }
-        }
-    }
-    else{
-        shipped_date_dimension$payday[i]<-"No"
-    }
+      }
+      else{
+            shipped_date_dimension$payday[i]<-"No"
+      }
 }
 
 #products_dimension
