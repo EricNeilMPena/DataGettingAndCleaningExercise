@@ -121,7 +121,6 @@ for(i in 1:nrow(order_date_dimension)){
       }
 }
 
-
 #required date dimension
 required_date_dimension<-rbind(required_date_dimension,temp)
 colnames(required_date_dimension)<-"required_date_key"
@@ -214,6 +213,7 @@ for(i in 1:nrow(shipped_date_dimension)){
       }
 }
 
+
 #products_dimension
 #copy Products into Products_dimension and remove missing values
 products_dimension <- Products
@@ -286,6 +286,10 @@ final<-temp5[,c("order_key","order_item_key","order_date_key","required_date_key
 final$order_details_key<-1:nrow(final)
 final<-final[,c(14,1:13)]
 order_details_fact<-final
+
+order_date_dimension$order_date<-as.character(order_date_dimension$order_date)
+required_date_dimension$required_date<-as.character(required_date_dimension$required_date)
+shipped_date_dimension$shipped_date<-as.character(shipped_date_dimension$shipped_date)
 
 dbWriteTable(con2,"customers_dimension",customers_dimension,overwrite=TRUE)
 dbWriteTable(con2,"employees_dimension",employees_dimension,overwrite=TRUE)
