@@ -243,7 +243,7 @@ products_dimension <- products_dimension[order(products_dimension$ProductName),]
 
 #order Transaction dimension
 order_transaction_dimension<-Orders
-colnames(order_transaction_dimension)[colnames(order_transaction_dimension)=="Id"]<-"OrderID"
+colnames(order_transaction_dimension)[colnames(order_transaction_dimension)=="Id"]<-"OrderId"
 for(i in 1:nrow(order_transaction_dimension)){
       if(is.na(order_transaction_dimension[i,6])){
             order_transaction_dimension[i,6]<-order_transaction_dimension[i,5]
@@ -256,10 +256,43 @@ order_transaction_dimension$order_key<-1:nrow(order_transaction_dimension)
 order_transaction_dimension<-order_transaction_dimension[,c(16,1:15)]
 
 #Order Details Fact
+temp2<-merge(OrderDetails,order_transaction_dimension)
+colnames(temp2)[10:12]<-c("order_date","required_date","shipped_date")
+temp2$order_date<-ymd(temp2$order_date)
+temp2$required_date<-ymd(temp2$required_date)
+temp2$shipped_date<-ymd(temp2$shipped_date)
+temp3<-left_join(temp2,select(order_date_dimension,order_date,order_date_key),by="order_date")
+temp4<-left_join(temp3,select(required_date_dimension,required_date,required_date_key),by="required_date")
+temp5<-left_join(temp4,select(shipped_date_dimension,shipped_date,shipped_date_key),by="shipped_date")
 
+colnames(customers_dimension)[2]<-"CustomerId"
+temp5<-left_join(temp5,select(customers_dimension,CustomerId,customer_key),by="CustomerId")
+for(i in 1:nrow(temp5)){
+      if(is.na(temp5[i,25])){
+      temp5[i,25]<-"Missing"
+      }
+}
 
+temp5<-left_join(temp5,select(employees_dimension,Id,employee_key),by=c("EmployeeId"="Id"))
+temp5<-left_join(temp5,select(products_dimension,Id,product_key),by=c("ProductId"="Id"))
 
 require( data.table )
-temp2 <- data.table( temp2 )
-temp2[ , Index := 1:.N , by = c("order_key") ]
-temp2 = as.data.frame(temp2)
+temp5 <- data.table( temp5 )
+temp5[ , order_item_key := 1:.N , by = c("order_key") ]
+temp5 = as.data.frame(temp5)
+temp5$order_line_total<-temp5$UnitPrice*temp5$Quantity*(1-temp5$Discount)
+final<-temp5[,c(7,29,22,23,24,27,25,26,4,5,6,21,30)]
+final$order_details_key<-1:nrow(final)
+final<-final[,c(14,1:13)]
+order_details_fact<-final
+
+dbWriteTable(con2,"customers_dimension",customers_dimension,overwrite=TRUE)
+dbWriteTable(con2,"employees_dimension",employees_dimension,overwrite=TRUE)
+dbWriteTable(con2,"products_dimension",products_dimension,overwrite=TRUE)
+dbWriteTable(con2,"order_date_dimension",order_date_dimension,overwrite=TRUE)
+dbWriteTable(con2,"required_date_dimension",required_date_dimension,overwrite=TRUE)
+dbWriteTable(con2,"shipped_date_dimension",shipped_date_dimension,overwrite=TRUE)
+dbWriteTable(con2,"order_details_fact",order_details_fact,overwrite=TRUE)
+
+dbDisconnect(con1)
+dbDisconnect(con2)
