@@ -256,3 +256,10 @@ order_transaction_dimension$order_key<-1:nrow(order_transaction_dimension)
 order_transaction_dimension<-order_transaction_dimension[,c(16,1:15)]
 
 #Order Details Fact
+
+
+
+require( data.table )
+temp2 <- data.table( temp2 )
+temp2[ , Index := 1:.N , by = c("order_key") ]
+temp2 = as.data.frame(temp2)
