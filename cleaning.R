@@ -2,6 +2,7 @@ library(RSQLite)
 library(DBI)
 library(dplyr)
 library(lubridate)
+detach("package:data.table",unload=TRUE)
 
 #extract data from Northwind DB
 con1 <- dbConnect(RSQLite::SQLite(), dbname="Northwind.sqlite")
