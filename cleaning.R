@@ -37,6 +37,7 @@ for(i in 1:nrow(customers_dimension)){
 customers_dimension<-customers_dimension[order(customers_dimension$CompanyName),]
 #create primary key for customers_dimension
 customers_dimension$customer_key<-1:nrow(customers_dimension)
+customers_dimension<-customers_dimension[,c(12,1:11)]
 
 #4.3
 #copy employees into employees_dimension and remove missing values
@@ -53,6 +54,7 @@ for(i in 1:nrow(employees_dimension)){
 employees_dimension<-employees_dimension[order(employees_dimension$LastName),]
 #create primary key for employees_dimension
 employees_dimension$employee_key<-1:nrow(employees_dimension)
+employees_dimension<-employees_dimension[,c(19,1:18)]
 
 #4.4
 #suppliers_dimension
@@ -70,7 +72,7 @@ for(i in 1:nrow(suppliers_dimension)){
 suppliers_dimension <- suppliers_dimension[order(suppliers_dimension$CompanyName),]
 #create primary key for customers_dimension
 suppliers_dimension$supplier_key<-1:nrow(suppliers_dimension)
-
+suppliers_dimension<-suppliers_dimension[,c(13,1:12)]
 
 #4.1
 temp<-as.data.frame(1:3652)
@@ -215,11 +217,11 @@ for(i in 1:nrow(shipped_date_dimension)){
 #copy Products into Products_dimension and remove missing values
 products_dimension <- Products
 for(i in 1:nrow(products_dimension)){
-  for(j in 3:ncol(products_dimension)){
-    if(is.na(products_dimension[i,j])){
-      product_dimension[i,j]<-"Missing"
-    }
-  }
+      for(j in 3:ncol(products_dimension)){
+            if(is.na(products_dimension[i,j])){
+                  product_dimension[i,j]<-"Missing"
+            }
+      }
 }
 
 #sort by ProductName
@@ -238,3 +240,19 @@ products_dimension <- select(products_dimension, product_key, Id, ProductName, Q
 #Sort by ProductName
 products_dimension <- products_dimension[order(products_dimension$ProductName),]
 
+
+#order Transaction dimension
+order_transaction_dimension<-Orders
+colnames(order_transaction_dimension)[colnames(order_transaction_dimension)=="Id"]<-"OrderID"
+for(i in 1:nrow(order_transaction_dimension)){
+      if(is.na(order_transaction_dimension[i,6])){
+            order_transaction_dimension[i,6]<-order_transaction_dimension[i,5]
+      }
+}
+order_transaction_dimension$DaysDelayed<-ifelse((ymd(order_transaction_dimension$ShippedDate)-ymd(order_transaction_dimension$RequiredDate))<0,
+       order_transaction_dimension$DaysDelayed<-0,
+       order_transaction_dimension$DaysDelayed<-ymd(order_transaction_dimension$ShippedDate)-ymd(order_transaction_dimension$RequiredDate))
+order_transaction_dimension$order_key<-1:nrow(order_transaction_dimension)
+order_transaction_dimension<-order_transaction_dimension[,c(16,1:15)]
+
+#Order Details Fact
