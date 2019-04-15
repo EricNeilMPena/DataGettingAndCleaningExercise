@@ -64,3 +64,20 @@ suppliers_dimension <- suppliers_dimension[order(suppliers_dimension$CompanyName
 #create primary key for customers_dimension
 suppliers_dimension$supplier_key<-1:nrow(suppliers_dimension)
 
+#products_dimension
+#copy Products into Products_dimension and remove missing values
+products_dimension <- Products
+for(i in 1:nrow(products_dimension)){
+  for(j in 3:ncol(products_dimension)){
+    if(is.na(products_dimension[i,j])){
+      product_dimension[i,j]<-"Missing"
+    }
+  }
+}
+
+#sort by ProductName
+products_dimension <- products_dimension[order(products_dimension$ProductName),]
+#create primary key for customers_dimension
+products_dimension$product_key<-1:nrow(products_dimension)
+products_dimension <- select(products_dimension, product_key, Id, ProductName, QuantityPerUnit, UnitPrice, UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued)
+
