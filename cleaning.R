@@ -281,7 +281,7 @@ temp5 <- data.table( temp5 )
 temp5[ , order_item_key := 1:.N , by = c("order_key") ]
 temp5 = as.data.frame(temp5)
 temp5$order_line_total<-temp5$UnitPrice*temp5$Quantity*(1-temp5$Discount)
-final<-temp5[,c(7,29,22,23,24,27,25,26,4,5,6,21,30)]
+final<-temp5[,c("order_key","order_item_key","order_date_key","required_date_key","shipped_date_key","product_key","customer_key","employee_key","UnitPrice","Quantity","Discount","DaysDelayed","order_line_total")]
 final$order_details_key<-1:nrow(final)
 final<-final[,c(14,1:13)]
 order_details_fact<-final
@@ -296,3 +296,4 @@ dbWriteTable(con2,"order_details_fact",order_details_fact,overwrite=TRUE)
 
 dbDisconnect(con1)
 dbDisconnect(con2)
+detach("package:data.table",unload=TRUE)
