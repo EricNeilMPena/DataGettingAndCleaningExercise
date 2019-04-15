@@ -43,7 +43,7 @@ for(i in 1:nrow(employees_dimension)){
     }
   }
 }
-#sort by CompanyName
+#sort by LastName
 employees_dimension<-employees_dimension[order(employees_dimension$LastName),]
 #create primary key for employees_dimension
 employees_dimension$employee_key<-1:nrow(employees_dimension)
