@@ -34,3 +34,19 @@ customers_dimension<-customers_dimension[order(customers_dimension$CompanyName),
 #create primary key for customers_dimension
 customers_dimension$customer_key<-1:nrow(customers_dimension)
 
+#suppliers_dimension
+#copy Suppliers into suppliers_dimension and remove missing values
+suppliers_dimension<- Suppliers
+for(i in 1:nrow(suppliers_dimension)){
+  for(j in 3:ncol(suppliers_dimension)){
+    if(is.na(suppliers_dimension[i,j])){
+      suppliers_dimension[i,j]<-"Missing"
+    }
+  }
+}
+
+#sort by CompanyName
+suppliers_dimension <- suppliers_dimension[order(suppliers_dimension$CompanyName),]
+#create primary key for customers_dimension
+suppliers_dimension$supplier_key<-1:nrow(suppliers_dimension)
+
