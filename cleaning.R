@@ -117,6 +117,53 @@ for(i in 1:nrow(order_date_dimension)){
       }
 }
 
+
+## shipped_date_dimension
+temp<-as.data.frame(1:3652)
+shipped_date_dimension<-rbind(shipped_date_dimension,temp)
+colnames(shipped_date_dimension)<-"shipped_date_key"
+shipped_date_dimension$shipped_date<-seq(ymd("2010-01-01"),ymd("2019-12-31"),by= "1 day")
+shipped_date_dimension$shipped_day_of_week<-weekdays(shipped_date_dimension$shipped_date)
+
+for (i in 1:nrow(shipped_date_dimension)){
+    ifelse(shipped_date_dimension[i,3]=="Sunday",shipped_date_dimension$type_of_day[i]<-"Weekend",
+           ifelse(shipped_date_dimension[i,3]=="Saturday",shipped_date_dimension$type_of_day[i]<-"Weekend",
+                  shipped_date_dimension$type_of_day[i]<-"Weekday"))
+}
+shipped_date_dimension$day<-day(shipped_date_dimension$shipped_date)
+shipped_date_dimension$month<-month(shipped_date_dimension$shipped_date,label=TRUE,abbr=FALSE)
+shipped_date_dimension$year<-year(shipped_date_dimension$shipped_date)
+
+for(i in 1:nrow(shipped_date_dimension)){
+    if(shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==TRUE){
+        end<-29
+    }
+    else if (shipped_date_dimension$month[i]=="February" & leap_year(shipped_date_dimension$year[i])==FALSE){
+        end<-28
+    }
+    else {
+        end<-30
+    }
+    if(shipped_date_dimension$day[i]==15|shipped_date_dimension$day[i]==end){
+        if(shipped_date_dimension$type_of_day[i]=="Weekday"){
+            shipped_date_dimension$payday[i]<-"Yes"
+        }
+        else if(shipped_date_dimension$type_of_day[i]=="Weekend"){
+            if (shipped_date_dimension$type_of_day[i-1]=="Weekday"){
+                shipped_date_dimension$payday[i-1]<-"Yes"
+                shipped_date_dimension$payday[i]<-"No"
+            }
+            else {
+                shipped_date_dimension$payday[i-2]<-"Yes"
+                shipped_date_dimension$payday[i]<-"No"
+            }
+        }
+    }
+    else{
+        shipped_date_dimension$payday[i]<-"No"
+    }
+}
+
 #products_dimension
 #copy Products into Products_dimension and remove missing values
 products_dimension <- Products
